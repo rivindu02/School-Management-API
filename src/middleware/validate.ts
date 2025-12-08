@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { z, ZodError } from 'zod';
+import { AnyZodObject, ZodError, ZodIssue } from 'zod';
 
 export const validate = (schema: AnyZodObject) => 
   async (req: Request, res: Response, next: NextFunction) => {
@@ -7,10 +7,12 @@ export const validate = (schema: AnyZodObject) =>
       await schema.parseAsync(req.body);
       next();
     } catch (error) {
+      // 1. Check if it's a ZodError
       if (error instanceof ZodError) {
         return res.status(400).json({
           message: 'Validation Error',
-          errors: error.errors.map((e) => ({
+          // 2. Explicitly map using the ZodIssue type
+          errors: error.errors.map((e: ZodIssue) => ({
             field: e.path[0],
             message: e.message
           }))

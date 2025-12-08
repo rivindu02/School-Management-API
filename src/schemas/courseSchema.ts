@@ -1,21 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { z , ZodError } from 'zod';
+import { z } from 'zod';
 
-export const validate = (schema: AnyZodObject) => 
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await schema.parseAsync(req.body);
-      next();
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          message: 'Validation Error',
-          errors: error.errors.map((e) => ({
-            field: e.path[0],
-            message: e.message
-          }))
-        });
-      }
-      return res.status(500).json({ message: 'Internal Server Error' });
-    }
-  };
+export const createCourseSchema = z.object({
+  title: z.string({ required_error: "Title is required" }),
+  code: z.string({ required_error: "Course Code is required" }),
+  credits: z.number({ required_error: "Credits are required" }).min(1, "Credits must be at least 1")
+});
+
+export const updateCourseSchema = createCourseSchema.partial();

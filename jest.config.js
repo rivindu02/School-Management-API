@@ -7,5 +7,7 @@ module.exports = {
     '^.+\\.ts$': ['ts-jest', {
       tsconfig: 'tsconfig.test.json'
     }]
-  }
+  },
+  // Run tests serially to avoid database conflicts
+  maxWorkers: 1
 };

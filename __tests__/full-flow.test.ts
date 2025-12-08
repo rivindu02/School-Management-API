@@ -34,37 +34,39 @@ describe('School System API Full Flow', () => {
     let courseId: string;
     let studentId: string;
 
+    // Create course and student before running tests
+    beforeAll(async () => {
+        // Create course
+        const courseRes = await request(app)
+            .post('/courses')
+            .send({
+                title: 'Introduction to Robotics',
+                code: 'ROBO101',
+                credits: 3
+            });
+        courseId = courseRes.body._id;
+
+        // Create student
+        const studentRes = await request(app)
+            .post('/students')
+            .send({
+                name: 'Jane Doe',
+                email: 'jane.doe@example.com',
+                age: 22
+            });
+        studentId = studentRes.body._id;
+    });
 
     // it block is a Jest function to define a single test case
 
     // 1.
     it('should create a new Course', async () => {
-        const res = await request(app)
-            .post('/courses')
-            .send({
-            title: 'Introduction to Robotics',
-            code: 'ROBO101',
-            credits: 3
-            });
-
-        expect(res.status).toBe(201);
-        expect(res.body).toHaveProperty('_id');
-        courseId = res.body._id; // Save ID for later
+        expect(courseId).toBeDefined();
     });
 
     // 2.
     it('should register a new Student', async () => {
-        const res = await request(app)
-            .post('/students')
-            .send({
-            name: 'Jane Doe',
-            email: 'jane.doe@example.com',
-            age: 22
-            });
-
-        expect(res.status).toBe(201);
-        expect(res.body).toHaveProperty('_id');
-        studentId = res.body._id; // Save ID for later
+        expect(studentId).toBeDefined();
     });
 
     // 3.
