@@ -4,6 +4,12 @@ import { AppError } from '../utils/AppError';
 
 
 export const createTeacher = async (data: any) => {
+  // 1. Check for missing fields
+  // if (!data.name || !data.email ) {
+  //   throw new AppError(400, 'Please provide name and email');
+  // }
+
+  // 2. Check for Duplicates (Email)
   const existingTeacher = await Teacher.findOne({ email: data.email });
   if (existingTeacher) {
     throw new AppError(409, 'Teacher with this email already exists');
