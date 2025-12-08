@@ -4,14 +4,14 @@ import { AppError } from '../utils/AppError';
 
 export const createStudent = async (data: any) => {
   // 1. Check for missing fields
-  if (!data.name || !data.email || !data.age) {
-    throw new AppError(400, 'Please provide name, email, and age');
-  }
+  // if (!data.name || !data.email || !data.age) {
+  //   throw new AppError(400, 'Please provide name, email, and age');
+  // }
 
-  // 2. Validate Business Logic (Age)
-  if (data.age < 0 || data.age > 150) {
-    throw new AppError(400, 'Age must be a valid positive number');
-  }
+  // // 2. Validate Business Logic (Age)
+  // if (data.age < 0 || data.age > 150) {
+  //   throw new AppError(400, 'Age must be a valid positive number');
+  // }
 
   // 3. Check for Duplicates (Email)
   const existingStudent = await Student.findOne({ email: data.email });
