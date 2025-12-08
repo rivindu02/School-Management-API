@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # Service 1: Your Node API
+  api:
+    build: .
+    ports:
+      - "3000:3000" # Maps computer port 3000 to container port 3000
+    depends_on:
+      - mongo # Wait for mongo to start first
+    volumes:
+      - ./src:/app/src # "Hot Reloading" - syncs your folder to the container
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.test.json:/app/tsconfig.test.json
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/school_db
+
+  # Service 2: The Database
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db # Saves data even if you restart Docker
+
+volumes:
+  mongo-data:
