@@ -114,9 +114,6 @@ describe('School System API Full Flow', () => {
         expect(myStudent.courses[0].title).toBe('Intro to Robotics and Automation');
     });
 
-    //
-
-
     // 6. 
     it('should remove the course from the student', async () => {
         const res = await request(app)
