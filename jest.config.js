@@ -9,5 +9,7 @@ module.exports = {
     }]
   },
   // Run tests serially to avoid database conflicts
-  maxWorkers: 1
+  maxWorkers: 1,
+  // Increase timeout for tests
+  testTimeout: 30000
 };

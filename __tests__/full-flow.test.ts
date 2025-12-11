@@ -7,9 +7,13 @@ process.env.NODE_ENV = 'test';
 process.env.MONGO_URI = 'mongodb://localhost:27017/school_db_test';
 
 import app from '../src/index'; //  index.ts should exports 'app' at the end
+import User from '../src/models/User';
 
 // Jest timeout for all tests
 jest.setTimeout(30000);
+
+let userToken: string;
+let adminToken: string;
 
 // This runs before all tests to connect to the DB
 // beforeAll and afterAll are Jest functions that run once before/after all tests
@@ -18,6 +22,28 @@ beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URI!);
     // Clear the test database before running tests
     await mongoose.connection.dropDatabase();
+
+    // Create admin for creation operations
+    const adminRes = await request(app)
+        .post('/auth/register')
+        .send({
+            username: 'admin',
+            email: 'admin@test.com',
+            password: 'admin123',
+            role: 'admin'
+        });
+    adminToken = adminRes.body.token;
+
+    // Create a test user and get token
+    const userRes = await request(app)
+        .post('/auth/register')
+        .send({
+            username: 'testuser',
+            email: 'testuser@test.com',
+            password: 'password123',
+            role: 'user'
+        });
+    userToken = userRes.body.token;
 });
 
 // This runs after all tests to close the connection (prevents hanging)
@@ -36,9 +62,10 @@ describe('School System API Full Flow', () => {
 
     // Create course and student before running tests
     beforeAll(async () => {
-        // Create course
+        // Create course (admin only)
         const courseRes = await request(app)
             .post('/courses')
+            .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 title: 'Introduction to Robotics',
                 code: 'ROBO101',
@@ -46,9 +73,10 @@ describe('School System API Full Flow', () => {
             });
         courseId = courseRes.body._id;
 
-        // Create student
+        // Create student (admin only)
         const studentRes = await request(app)
             .post('/students')
+            .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 name: 'Jane Doe',
                 email: 'jane.doe@example.com',
@@ -73,6 +101,7 @@ describe('School System API Full Flow', () => {
     it('should enroll the student in the course', async () => {
         const res = await request(app)
             .put(`/students/${studentId}/enroll-course`)      // ${string variable} is used to insert the studentId into the URL without concatenation
+            .set('Authorization', `Bearer ${userToken}`)
             .send({ courseId: courseId });
 
         expect(res.status).toBe(200); // status 200 means proper update <----- Haven't given like with 201 for creation
@@ -89,6 +118,7 @@ describe('School System API Full Flow', () => {
     it('should update the course details', async () => {
         const res = await request(app)
             .put(`/courses/${courseId}`)
+            .set('Authorization', `Bearer ${userToken}`)
             .send({
             title: 'Intro to Robotics and Automation', // updated title
             credits: 4 // updated credits
@@ -102,7 +132,8 @@ describe('School System API Full Flow', () => {
 
     // 5.
     it('should retrieve student with course details', async () => {
-        const res = await request(app).get('/students');
+        const res = await request(app)
+            .get('/students');
 
         // Find our specific student in the list
         const myStudent = res.body.find((s: any) => s._id === studentId);
@@ -118,6 +149,7 @@ describe('School System API Full Flow', () => {
     it('should remove the course from the student', async () => {
         const res = await request(app)
             .put(`/students/${studentId}/remove-course`)
+            .set('Authorization', `Bearer ${userToken}`)
             .send({ courseId: courseId });
 
         expect(res.status).toBe(200);
@@ -126,7 +158,9 @@ describe('School System API Full Flow', () => {
     
     // 7. 
     it('should delete the student', async () => {
-        const res = await request(app).delete(`/students/${studentId}`);
+        const res = await request(app)
+            .delete(`/students/${studentId}`)
+            .set('Authorization', `Bearer ${adminToken}`);
         expect(res.status).toBe(200);
     });
 });
