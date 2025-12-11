@@ -58,13 +58,16 @@ if (process.env.NODE_ENV !== 'test') {
 // ----------------------------------------------------------------------
 
 // Home Route (Health Check / API Info)
+// app.get('/', (req: Request, res: Response) => {
+//     res.json({
+//         message: 'School Management API is ready.',
+//         version: '1.0.0',
+//         documentation: '/docs', // Placeholder for future swagger docs
+//         status: 'Online'
+//     });
+// });
 app.get('/', (req: Request, res: Response) => {
-    res.json({
-        message: 'School Management API is ready.',
-        version: '1.0.0',
-        documentation: '/docs', // Placeholder for future swagger docs
-        status: 'Online'
-    });
+  res.send('API is running inside Docker!');
 });
 
 // Use the imported Express Routers
