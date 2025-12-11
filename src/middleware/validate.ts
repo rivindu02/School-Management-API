@@ -1,23 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject, ZodError, ZodIssue } from 'zod';
+import { ZodObject } from 'zod';
 
-export const validate = (schema: AnyZodObject) => 
+export const validate = (schema: ZodObject<any>) =>
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await schema.parseAsync(req.body);
-      next();
-    } catch (error) {
-      // 1. Check if it's a ZodError
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          message: 'Validation Error',
-          // 2. Explicitly map using the ZodIssue type
-          errors: error.errors.map((e: ZodIssue) => ({
-            field: e.path[0],
-            message: e.message
-          }))
-        });
-      }
-      return res.status(500).json({ message: 'Internal Server Error' });
+    const result = await schema.safeParseAsync(req.body);
+    if (result.success) {
+      // Assign parsed data so transforms/stripping apply downstream
+      req.body = result.data as any;
+      return next();
     }
+
+    const issues = result.error.issues.map((e: any) => ({
+      field: Array.isArray(e.path) ? e.path.join('.') : String(e.path),
+      message: e.message
+    }));
+
+    return res.status(400).json({
+      message: 'Validation Error',
+      errors: issues
+    });
   };
