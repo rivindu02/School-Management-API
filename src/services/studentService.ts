@@ -1,5 +1,5 @@
 import Student from '../models/Student';
-import Course from '../models/Course'; // Import Course to check if it exists
+import Course from '../models/Course'; 
 import { AppError } from '../utils/AppError';
 
 export const createStudent = async (data: any) => {

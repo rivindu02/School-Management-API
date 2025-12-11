@@ -2,6 +2,7 @@ import Teacher from '../models/Teacher';
 import Course from '../models/Course'; 
 import { AppError } from '../utils/AppError';
 
+
 export const createTeacher = async (data: any) => {
   const existingTeacher = await Teacher.findOne({ email: data.email });
   if (existingTeacher) {
