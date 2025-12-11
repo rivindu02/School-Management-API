@@ -1,6 +1,6 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
-import app from '../src/index';
+import app from '../src/app';
 import User from '../src/models/User';
 
 describe('Authentication System Tests', () => {

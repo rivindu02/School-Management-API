@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 process.env.NODE_ENV = 'test';
 process.env.MONGO_URI = 'mongodb://localhost:27017/school_db_test';
 
-import app from '../src/index'; //  index.ts should exports 'app' at the end
+import app from '../src/app'; //  index.ts should exports 'app' at the end
 import User from '../src/models/User';
 
 // Jest timeout for all tests

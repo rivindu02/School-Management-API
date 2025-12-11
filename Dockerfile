@@ -18,4 +18,4 @@ EXPOSE 3000
 
 # Command to run the app
 # We use nodemon for development so it restarts when you save files
-CMD ["npx", "nodemon", "src/index.ts"]
+CMD ["npx", "nodemon", "src/server.ts"]

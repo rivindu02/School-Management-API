@@ -1,13 +1,11 @@
 // src/index.ts
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
 // Import Routes
 import courseRoutes from './routes/courseRoutes';
 import studentRoutes from './routes/studentRoutes';
 import teacherRoutes from './routes/teacherRoutes';
-import authRoutes from './routes/authRoutes';
-import { AppError } from './utils/AppError';
 
 const app = express();
 const PORT = 3000;
@@ -39,7 +37,6 @@ app.get('/', (req: Request, res: Response) => {
         message: 'School Management API',
         version: '1.0.0',
         endpoints: {
-            auth: '/auth',
             courses: '/courses',
             students: '/students',
             teachers: '/teachers'
@@ -47,48 +44,10 @@ app.get('/', (req: Request, res: Response) => {
     });
 });
 
-// Authentication Routes
-app.use('/auth', authRoutes);
-
 // Use Routes
 app.use('/courses', courseRoutes);
 app.use('/students', studentRoutes);
 app.use('/teachers', teacherRoutes);
-
-// Global Error Handler
-app.use((err: Error | AppError, req: Request, res: Response, next: NextFunction) => {
-  // Only log errors in non-test environments to reduce noise
-  if (process.env.NODE_ENV !== 'test') {
-    console.error('Error:', err);
-  }
-
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
-      message: err.message
-    });
-  }
-
-  // Handle Mongoose validation errors
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      message: 'Validation Error',
-      error: err.message
-    });
-  }
-
-  // Handle Mongoose duplicate key errors
-  if (err.name === 'MongoServerError' && (err as any).code === 11000) {
-    return res.status(400).json({
-      message: 'Duplicate field value entered'
-    });
-  }
-
-  // Default error
-  res.status(500).json({
-    message: 'Internal Server Error',
-    error: err.message
-  });
-});
 
 
 // Start the Server
