@@ -3,14 +3,14 @@ import { AppError } from '../utils/AppError';
 
 export const createCourse = async (data: any) => {
   // 1. Check Required Fields
-  if (!data.title || !data.code || !data.credits) {
-    throw new AppError(400, 'Please provide title, code, and credits');
-  }
+  // if (!data.title || !data.code || !data.credits) {
+  //   throw new AppError(400, 'Please provide title, code, and credits');
+  // }
 
-  // 2. Validate Logic (Credits)
-  if (data.credits <= 0) {
-    throw new AppError(400, 'Credits must be greater than 0');
-  }
+  // // 2. Validate Logic (Credits)
+  // if (data.credits <= 0) {
+  //   throw new AppError(400, 'Credits must be greater than 0');
+  // }
 
   // 3. Check for Duplicate Course Code
   const existingCourse = await Course.findOne({ code: data.code });
