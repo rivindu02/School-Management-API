@@ -47,10 +47,7 @@ app.use(cors({
 // MongoDB URI with fallback for local development
 // Docker: mongodb://mongo:27017/school_db (container name)
 // Local:  mongodb://localhost:27018/school_db (mapped port)
-const MONGO_URI = process.env.MONGO_URI || 
-  (process.env.NODE_ENV === 'development' 
-    ? 'mongodb://localhost:27018/school_db' 
-    : 'mongodb://mongo:27017/school_db');
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27018/school_db';
 
 // Only connect if not in test mode (tests will manage their own connection)
 if (process.env.NODE_ENV !== 'test') {
