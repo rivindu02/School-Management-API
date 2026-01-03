@@ -3,21 +3,31 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  // This tells Jest to look for files in the __tests__ folder
   testMatch: ['**/__tests__/**/*.test.ts'],
-
-  // [NEW CONFIGURATION]
-  // This helps Jest resolve modules imported using relative paths (like 'src/app')
-  moduleDirectories: ["node_modules", "src"], 
-  // [END NEW CONFIGURATION]
-
+  
+  // Module resolution
+  moduleDirectories: ["node_modules", "src"],
+  
+  // Transform configuration
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
+    '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: 'tsconfig.test.json'
     }]
   },
-  // Run tests serially to avoid database conflicts
+  
+  // Test environment setup
   maxWorkers: 1,
-  // Increase timeout for tests
-  testTimeout: 30000
+  testTimeout: 30000,
+  
+  // Handle async operations
+  detectOpenHandles: true,
+  forceExit: true,
+  
+  // Clear mocks between tests
+  clearMocks: true,
+  
+  // Ignore node_modules except for ES modules that need transformation
+  transformIgnorePatterns: [
+    'node_modules/(?!(.*\\.mjs$))'
+  ]
 };
