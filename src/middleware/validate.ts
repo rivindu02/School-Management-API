@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ZodObject } from 'zod';
+import { ZodObject } from 'zod';  // Use a validation library like Joi or Zod (cleaner than manual Regex)
 
 export const validate = (schema: ZodObject<any>) =>
   async (req: Request, res: Response, next: NextFunction) => {

@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 
 // Set test environment before importing app
 process.env.NODE_ENV = 'test';
-process.env.MONGO_URI = 'mongodb://localhost:27017/school_db_test';
+process.env.MONGO_URI = 'mongodb://localhost:27018/school_db_test';
 
 import app from '../src/app'; //  index.ts should exports 'app' at the end
 import User from '../src/models/User';

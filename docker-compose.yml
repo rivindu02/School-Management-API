@@ -3,6 +3,8 @@ version: '3.8'
 services:
   # Service 1: Your Node API
   api:
+    # 1. Give it a specific name
+    #image: my-app-image:v1
     build: .
     ports:
       - "3000:3000" # Maps computer port 3000 to container port 3000
@@ -14,6 +16,7 @@ services:
       - ./tsconfig.test.json:/app/tsconfig.test.json
     environment:
       - MONGO_URI=mongodb://mongo:27017/school_db
+      - NODE_ENV=development
 
   # Service 2: The Database
   mongo:

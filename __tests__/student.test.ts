@@ -3,7 +3,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 
 process.env.NODE_ENV = 'test';
-process.env.MONGO_URI = 'mongodb://localhost:27017/school_db_test';
+process.env.MONGO_URI = 'mongodb://localhost:27018/school_db_test';
 
 import app from '../src/app';
 import User from '../src/models/User';
