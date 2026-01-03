@@ -1,4 +1,12 @@
-// src/server.ts (New file)
+// src/server.ts 
+
+// Entry point for the Express application
+// This server file is responsible for:
+// 1. Starting the HTTP server on the specified port
+// 2. Importing and using the main application logic
+// 3. Handling environment configuration
+// 4. Providing startup logging information
+
 
 import app from './app'; // Import the application logic
 // (Optional: Import mongoose if you want to explicitly close the DB connection on shutdown)

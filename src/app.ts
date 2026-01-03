@@ -11,9 +11,8 @@ import { AppError } from './utils/AppError';
 // 1. IMPORT ROUTES AND MIDDLEWARE
 // ----------------------------------------------------------------------
 
-// Import the Middleware we discussed (to be created in src/middleware/)
-// Note: We don't import the function itself yet, only the file structure placeholder
-// import { verifyToken, authorize } from './middleware/authMiddleware'; 
+import { authenticate, authorize } from './middleware/auth'; 
+import { validate } from './middleware/validate';
 
 // Import the Route files (these will contain the actual logic and use the middleware)
 import authRoutes from './routes/authRoutes';
@@ -45,78 +44,81 @@ app.use(cors({
 // 3. DATABASE CONNECTION
 // ----------------------------------------------------------------------
 
-// // MongoDB URI with fallback for local development
-// // Docker: mongodb://mongo:27017/school_db (container name)
-// // Local:  mongodb://localhost:27018/school_db (mapped port)
-// const MONGO_URI = process.env.MONGO_URI || 
-//   (process.env.NODE_ENV === 'development' 
-//     ? 'mongodb://localhost:27018/school_db' 
-//     : 'mongodb://mongo:27017/school_db');
+// MongoDB URI with fallback for local development
+// Docker: mongodb://mongo:27017/school_db (container name)
+// Local:  mongodb://localhost:27018/school_db (mapped port)
+const MONGO_URI = process.env.MONGO_URI || 
+  (process.env.NODE_ENV === 'development' 
+    ? 'mongodb://localhost:27018/school_db' 
+    : 'mongodb://mongo:27017/school_db');
 
-// // Only connect if not in test mode (tests will manage their own connection)
-// if (process.env.NODE_ENV !== 'test') {
-//   mongoose.connect(MONGO_URI)
-//     .then(() => console.log(`✅ Connected to MongoDB at ${MONGO_URI}`))
-//     .catch((err) => console.error('❌ MongoDB Connection Error:', err));
-// }
+// Only connect if not in test mode (tests will manage their own connection)
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(MONGO_URI)
+    .then(() => console.log(`✅ Connected to MongoDB at ${MONGO_URI}`))
+    .catch((err) => {
+      console.error('❌ MongoDB Connection Error:', err);
+      process.exit(1); // Exit if database connection fails
+    });
+}
 
 // ----------------------------------------------------------------------
 // 2. DATABASE LOGIC (Lambda & Test Safe)
 // ----------------------------------------------------------------------
 
-// Cache the connection for Lambda reuse
-let cachedConnection: typeof mongoose | null = null;
+// // Cache the connection for Lambda reuse
+// let cachedConnection: typeof mongoose | null = null;
 
-export const connectToDatabase = async () => {
-  // 1. CHECK GLOBAL STATE: If mongoose is already connected (e.g., by Jest), return immediately.
-  if (mongoose.connection.readyState >= 1) {
-    return mongoose.connection;
-  }
+// export const connectToDatabase = async () => {
+//   // 1. CHECK GLOBAL STATE: If mongoose is already connected (e.g., by Jest), return immediately.
+//   if (mongoose.connection.readyState >= 1) {
+//     return mongoose.connection;
+//   }
 
-  // 2. CHECK CACHE: If we have a cached connection from a previous Lambda invocation, use it.
-  if (cachedConnection) {
-    return cachedConnection;
-  }
+//   // 2. CHECK CACHE: If we have a cached connection from a previous Lambda invocation, use it.
+//   if (cachedConnection) {
+//     return cachedConnection;
+//   }
 
-  // 3. CREATE NEW CONNECTION
-  console.log("=> Creating new database connection");
+//   // 3. CREATE NEW CONNECTION
+//   console.log("=> Creating new database connection");
   
-  // Default to local if env not set (Test/Dev friendly)
-  const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/school_db';
+//   // Default to local if env not set (Test/Dev friendly)
+//   const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/school_db';
 
-  try {
-    cachedConnection = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000, 
-      bufferCommands: false, // Important for Lambda to fail fast if DB is down
-    });
-    return cachedConnection;
-  } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
-    throw error;
-  }
-};
+//   try {
+//     cachedConnection = await mongoose.connect(uri, {
+//       serverSelectionTimeoutMS: 5000, 
+//       bufferCommands: false, // Important for Lambda to fail fast if DB is down
+//     });
+//     return cachedConnection;
+//   } catch (error) {
+//     console.error("Error connecting to MongoDB:", error);
+//     throw error;
+//   }
+// };
 
 
 // ----------------------------------------------------------------------
 // 3. DATABASE MIDDLEWARE (*** MISSING BEFORE***)
 // ----------------------------------------------------------------------
 
-// This function runs before EVERY route request to ensure DB is active
-app.use(async (req: Request, res: Response, next: NextFunction) => {
-    // Skip DB connection for simple health checks to save resources
-    if (req.path === '/' || req.path === '/health') return next();
+// // This function runs before EVERY route request to ensure DB is active
+// app.use(async (req: Request, res: Response, next: NextFunction) => {
+//     // Skip DB connection for simple health checks to save resources
+//     if (req.path === '/' || req.path === '/health') return next();
 
-    try {
-        await connectToDatabase();
-        next();
-    } catch (error) {
-        console.error("Database Middleware Error:", error);
-        res.status(500).json({ 
-            statusCode: 500, 
-            message: 'Service Unavailable: Database Connection Failed' 
-        });
-    }
-});
+//     try {
+//         await connectToDatabase();
+//         next();
+//     } catch (error) {
+//         console.error("Database Middleware Error:", error);
+//         res.status(500).json({ 
+//             statusCode: 500, 
+//             message: 'Service Unavailable: Database Connection Failed' 
+//         });
+//     }
+// });
 
 // ----------------------------------------------------------------------
 // 4. ROUTE DEFINITIONS
@@ -142,7 +144,8 @@ app.get('/', (req: Request, res: Response) => {
         version: '1.0.0',
         documentation: '/api-docs',
         status: 'Online',
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
+        database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
     });
 });
 
