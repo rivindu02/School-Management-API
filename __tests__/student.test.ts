@@ -204,9 +204,10 @@ describe('Student API Tests', () => {
   });
 
   describe('GET /students - Get All Students', () => {
-    it('should retrieve all students without authentication', async () => {
+    it('should retrieve all students with authentication', async () => {
       const res = await request(app)
-        .get('/students');
+        .get('/students')
+        .set('Authorization', `Bearer ${userToken}`);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -215,9 +216,10 @@ describe('Student API Tests', () => {
   });
 
   describe('GET /students/:id - Get Single Student', () => {
-    it('should retrieve a student by ID without authentication', async () => {
+    it('should retrieve a student by ID with authentication', async () => {
       const res = await request(app)
-        .get(`/students/${studentId}`);
+        .get(`/students/${studentId}`)
+        .set('Authorization', `Bearer ${userToken}`)
 
       expect(res.status).toBe(200);
       expect(res.body._id).toBe(studentId);
@@ -228,6 +230,7 @@ describe('Student API Tests', () => {
       const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
         .get(`/students/${fakeId}`)
+        .set('Authorization', `Bearer ${userToken}`)
 
       expect(res.status).toBe(404);
       expect(res.body.message).toBe('Student not found');
@@ -235,7 +238,8 @@ describe('Student API Tests', () => {
 
     it('should return 500 for invalid student ID format', async () => {
       const res = await request(app)
-        .get('/students/invalid-id');
+        .get('/students/invalid-id')
+        .set('Authorization', `Bearer ${userToken}`);
 
       expect(res.status).toBe(500);
     });
@@ -414,7 +418,8 @@ describe('Student API Tests', () => {
 
       // Verify it's deleted
       const getRes = await request(app)
-        .get(`/students/${tempStudentId}`);
+        .get(`/students/${tempStudentId}`)
+        .set('Authorization', `Bearer ${userToken}`)
       expect(getRes.status).toBe(404);
     });
 
@@ -634,6 +639,7 @@ describe('Student API Tests', () => {
       // Verify enrollment
       let getRes = await request(app)
         .get(`/students/${studentRes.body._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
       expect(getRes.body.courses).toHaveLength(1);
 
@@ -647,6 +653,7 @@ describe('Student API Tests', () => {
       // Verify removal
       getRes = await request(app)
         .get(`/students/${studentRes.body._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
       expect(getRes.body.courses).toHaveLength(0);
     });
@@ -692,6 +699,7 @@ describe('Student API Tests', () => {
       // Verify deletion
       await request(app)
         .get(`/students/${studentRes.body._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(404);
     });
 
@@ -699,6 +707,7 @@ describe('Student API Tests', () => {
       // This test works if there are students or not
       const res = await request(app)
         .get('/students')
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
       expect(Array.isArray(res.body)).toBe(true);

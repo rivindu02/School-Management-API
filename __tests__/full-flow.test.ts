@@ -133,7 +133,8 @@ describe('School System API Full Flow', () => {
     // 5.
     it('should retrieve student with course details', async () => {
         const res = await request(app)
-            .get('/students');
+            .get('/students')
+        .set('Authorization', `Bearer ${userToken}`);
 
         // Find our specific student in the list
         const myStudent = res.body.find((s: any) => s._id === studentId);

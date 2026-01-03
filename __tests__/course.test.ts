@@ -151,9 +151,10 @@ describe('Course API Tests', () => {
   });
 
   describe('GET /courses - Get All Courses', () => {
-    it('should retrieve all courses without authentication', async () => {
+    it('should retrieve all courses with authentication', async () => {
       const res = await request(app)
-        .get('/courses');
+        .get('/courses')
+        .set('Authorization', `Bearer ${userToken}`);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -162,9 +163,10 @@ describe('Course API Tests', () => {
   });
 
   describe('GET /courses/:id - Get Single Course', () => {
-    it('should retrieve a course by ID without authentication', async () => {
+    it('should retrieve a course by ID with authentication', async () => {
       const res = await request(app)
-        .get(`/courses/${courseId}`);
+        .get(`/courses/${courseId}`)
+        .set('Authorization', `Bearer ${userToken}`)
 
       expect(res.status).toBe(200);
       expect(res.body._id).toBe(courseId);
@@ -174,7 +176,8 @@ describe('Course API Tests', () => {
     it('should return 404 for non-existent course', async () => {
       const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
-        .get(`/courses/${fakeId}`);
+        .get(`/courses/${fakeId}`)
+        .set('Authorization', `Bearer ${userToken}`)
 
       expect(res.status).toBe(404);
       expect(res.body.message).toBe('Course not found');
@@ -182,7 +185,8 @@ describe('Course API Tests', () => {
 
     it('should return 500 for invalid course ID format', async () => {
       const res = await request(app)
-        .get('/courses/invalid-id');
+        .get('/courses/invalid-id')
+        .set('Authorization', `Bearer ${userToken}`);
 
       expect(res.status).toBe(500);
     });
@@ -288,7 +292,8 @@ describe('Course API Tests', () => {
 
       // Verify it's deleted
       const getRes = await request(app)
-        .get(`/courses/${tempCourseId}`);
+        .get(`/courses/${tempCourseId}`)
+        .set('Authorization', `Bearer ${userToken}`)
       expect(getRes.status).toBe(404);
     });
 
@@ -441,6 +446,7 @@ describe('Course API Tests', () => {
       // Verify deletion
       await request(app)
         .get(`/courses/${courseRes.body._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(404);
     });
 
@@ -483,6 +489,7 @@ describe('Course API Tests', () => {
       // Verify deletion
       await request(app)
         .get(`/courses/${courseRes.body._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(404);
     });
   });
@@ -491,6 +498,7 @@ describe('Course API Tests', () => {
     it('should handle empty courses list', async () => {
       const res = await request(app)
         .get('/courses')
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -535,6 +543,7 @@ describe('Course API Tests', () => {
       for (const studentId of studentIds) {
         const getRes = await request(app)
           .get(`/students/${studentId}`)
+          .set('Authorization', `Bearer ${adminToken}`)
           .expect(200);
         
         expect(getRes.body.courses.length).toBeGreaterThan(0);

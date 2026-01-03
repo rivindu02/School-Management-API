@@ -382,7 +382,8 @@ describe('Validation Middleware Tests', () => {
   describe('Edge Cases - Invalid MongoDB ObjectIDs', () => {
     it('should return 400 or 500 for invalid student ID format', async () => {
       const res = await request(app)
-        .get('/students/invalid-id-format');
+        .get('/students/invalid-id-format')
+        .set('Authorization', `Bearer ${userToken}`);
       
       // Server may return 400 or 500 for invalid ObjectID - both acceptable
       expect([400, 500]).toContain(res.status);
@@ -390,14 +391,16 @@ describe('Validation Middleware Tests', () => {
 
     it('should return 400 or 500 for invalid teacher ID format', async () => {
       const res = await request(app)
-        .get('/teachers/not-a-valid-objectid');
+        .get('/teachers/not-a-valid-objectid')
+        .set('Authorization', `Bearer ${userToken}`);
       
       expect([400, 500]).toContain(res.status);
     });
 
     it('should return 400 or 500 for invalid course ID format', async () => {
       const res = await request(app)
-        .get('/courses/12345');
+        .get('/courses/12345')
+        .set('Authorization', `Bearer ${userToken}`);
       
       expect([400, 500]).toContain(res.status);
     });
@@ -406,6 +409,7 @@ describe('Validation Middleware Tests', () => {
       const fakeId = new mongoose.Types.ObjectId();
       await request(app)
         .get(`/students/${fakeId}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(404);
     });
 
@@ -413,6 +417,7 @@ describe('Validation Middleware Tests', () => {
       const fakeId = new mongoose.Types.ObjectId();
       await request(app)
         .get(`/teachers/${fakeId}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(404);
     });
 
@@ -420,6 +425,7 @@ describe('Validation Middleware Tests', () => {
       const fakeId = new mongoose.Types.ObjectId();
       await request(app)
         .get(`/courses/${fakeId}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(404);
     });
   });

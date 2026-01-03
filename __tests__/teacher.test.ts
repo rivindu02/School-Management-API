@@ -156,9 +156,10 @@ describe('Teacher API Tests', () => {
   });
 
   describe('GET /teachers - Get All Teachers', () => {
-    it('should retrieve all teachers without authentication', async () => {
+    it('should retrieve all teachers with authentication', async () => {
       const res = await request(app)
-        .get('/teachers');
+        .get('/teachers')
+        .set('Authorization', `Bearer ${userToken}`);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -167,9 +168,10 @@ describe('Teacher API Tests', () => {
   });
 
   describe('GET /teachers/:id - Get Single Teacher', () => {
-    it('should retrieve a teacher by ID without authentication', async () => {
+    it('should retrieve a teacher by ID with authentication', async () => {
       const res = await request(app)
-        .get(`/teachers/${teacherId}`);
+        .get(`/teachers/${teacherId}`)
+        .set('Authorization', `Bearer ${userToken}`)
 
       expect(res.status).toBe(200);
       expect(res.body._id).toBe(teacherId);
@@ -180,6 +182,7 @@ describe('Teacher API Tests', () => {
       const fakeId = new mongoose.Types.ObjectId();
       const res = await request(app)
         .get(`/teachers/${fakeId}`)
+        .set('Authorization', `Bearer ${userToken}`)
 
       expect(res.status).toBe(404);
       expect(res.body.message).toBe('Teacher not found');
@@ -187,7 +190,8 @@ describe('Teacher API Tests', () => {
 
     it('should return 500 for invalid teacher ID format', async () => {
       const res = await request(app)
-        .get('/teachers/invalid-id');
+        .get('/teachers/invalid-id')
+        .set('Authorization', `Bearer ${userToken}`);
 
       expect(res.status).toBe(500);
     });
@@ -390,7 +394,8 @@ describe('Teacher API Tests', () => {
 
       // Verify it's deleted
       const getRes = await request(app)
-        .get(`/teachers/${tempTeacherId}`);
+        .get(`/teachers/${tempTeacherId}`)
+        .set('Authorization', `Bearer ${userToken}`)
       expect(getRes.status).toBe(404);
     });
 
@@ -611,6 +616,7 @@ describe('Teacher API Tests', () => {
       // Verify assignment
       let getRes = await request(app)
         .get(`/teachers/${teacherRes.body._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
       expect(getRes.body.courses).toHaveLength(1);
 
@@ -624,6 +630,7 @@ describe('Teacher API Tests', () => {
       // Verify unassignment
       getRes = await request(app)
         .get(`/teachers/${teacherRes.body._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
       expect(getRes.body.courses).toHaveLength(0);
     });
@@ -704,12 +711,14 @@ describe('Teacher API Tests', () => {
       // Verify deletion
       await request(app)
         .get(`/teachers/${teacherRes.body._id}`)
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(404);
     });
 
     it('should handle empty teachers list', async () => {
       const res = await request(app)
         .get('/teachers')
+        .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
       expect(Array.isArray(res.body)).toBe(true);

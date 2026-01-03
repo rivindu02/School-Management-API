@@ -148,10 +148,12 @@ describe('Complex Multi-Entity Scenarios', () => {
         // Verify the complete setup
         const mathCourseDetails = await request(app)
             .get(`/courses/${mathCourse.body._id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
 
         const student1Details = await request(app)
             .get(`/students/${student1.body._id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
 
         expect(student1Details.body.courses).toHaveLength(2);
@@ -214,10 +216,12 @@ describe('Complex Multi-Entity Scenarios', () => {
         // Verify teacher and student still exist
         await request(app)
             .get(`/teachers/${teacher.body._id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
 
         await request(app)
             .get(`/students/${student.body._id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
     });
 
@@ -277,6 +281,7 @@ describe('Complex Multi-Entity Scenarios', () => {
         // Verify relationships still intact
         const studentDetails = await request(app)
             .get(`/students/${student.body._id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
 
         expect(studentDetails.body.courses).toHaveLength(1);
