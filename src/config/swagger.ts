@@ -1,4 +1,18 @@
 // src/config/swagger.ts
+/**
+ * Swagger/OpenAPI configuration for School Management API
+ * 
+ * This file sets up the Swagger documentation configuration using swagger-jsdoc.
+ * It defines:
+ * - API metadata (title, version, description, contact info, license)
+ * - Server configurations for development and production
+ * - Security schemes (JWT Bearer authentication)
+ * - Reusable schema components for all API models
+ * - API routes discovery pattern
+ * 
+ * The configuration is used to generate interactive API documentation
+ * accessible at /api-docs endpoint when the server is running.
+ */
 
 import swaggerJsdoc from 'swagger-jsdoc';
 
