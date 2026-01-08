@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  namespace: school-api
+  labels:
+    app: mongo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: microk8s-hostpath
+  resources:
+    requests:
+      storage: 5Gi
+
+
+# Purpose:
+# PVCs are used to request storage for pods in a cluster-independent way. They abstract
+# the underlying storage implementation, allowing pods to request storage without knowing
+# the details of the storage infrastructure.
+
+# Common Use Cases:
+# - Database storage for stateful applications
+# - Persistent application data that survives pod restarts
+# - Shared storage across multiple pods
+# - Configuration and state management

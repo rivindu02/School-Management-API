@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: school-api
+  labels:
+    name: school-api
+    environment: production
