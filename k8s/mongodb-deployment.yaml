@@ -114,8 +114,8 @@ spec:
       cpu: "50m"
       memory: "64Mi"
     max:
-      cpu: "150m"
-      memory: "256Mi"
+      cpu: "600m"
+      memory: "1Gi"
     min:
       cpu: "10m"
       memory: "32Mi"
