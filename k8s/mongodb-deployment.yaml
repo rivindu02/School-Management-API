@@ -44,20 +44,20 @@ spec:
             - mongosh
             - --eval
             - "db.adminCommand('ping')"
-          initialDelaySeconds: 60   
-          periodSeconds: 30  # how often to perform the probe
-          timeoutSeconds: 10
-          failureThreshold: 5
+          initialDelaySeconds: 120   
+          periodSeconds: 60  # how often to perform the probe
+          timeoutSeconds: 15
+          failureThreshold: 3
         readinessProbe: # Determines if the container is ready to accept traffic --> if failed-> pod removed from service endpoints but not restarted
           exec:
             command:
             - mongosh
             - --eval
             - "db.adminCommand('ping')"
-          initialDelaySeconds: 30
-          periodSeconds: 15
-          timeoutSeconds: 5
-          failureThreshold: 5
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 10
+          failureThreshold: 3
         resources:
           requests:
             memory: "512Mi"
@@ -86,6 +86,9 @@ spec:
     targetPort: 27017
   type: ClusterIP
 ---
+# ResourceQuota defines compute resource constraints on a namespace
+# It limits the quantity of objects that can be created in a namespace by type
+# and the total amount of compute resources that may be consumed by objects in that project
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -100,6 +103,9 @@ spec:
     persistentvolumeclaims: "5"
     requests.storage: "10Gi"
 ---
+# LimitRange is a Kubernetes resource that enforces resource consumption limits within a namespace.
+# It allows administrators to set minimum and maximum resource constraints (CPU, memory, storage)
+# for pods, containers, and persistent volume claims in a specific namespace.
 apiVersion: v1
 kind: LimitRange
 metadata:
