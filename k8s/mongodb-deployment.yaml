@@ -33,44 +33,44 @@ spec:
               key: MONGO_INITDB_ROOT_PASSWORD
         - name: MONGO_INITDB_DATABASE
           value: "school_db"
-        volumeMounts:
+        volumeMounts:         # specifies the volumes to mount into the container's filesystem.
         - name: mongo-storage
-          mountPath: /data/db
-        - name: mongo-config
+          mountPath: /data/db   # The path within the container where the volume should be mounted
+        - name: mongo-config    # to store configuration files and metadata
           mountPath: /data/configdb
-        livenessProbe:
+        livenessProbe:  # Determines if the container is running and healthy--> if failed-> restart container
           exec:
             command:
             - mongosh
             - --eval
             - "db.adminCommand('ping')"
-          initialDelaySeconds: 45
-          periodSeconds: 20
+          initialDelaySeconds: 60   
+          periodSeconds: 30  # how often to perform the probe
+          timeoutSeconds: 10
+          failureThreshold: 5
+        readinessProbe: # Determines if the container is ready to accept traffic --> if failed-> pod removed from service endpoints but not restarted
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 30
+          periodSeconds: 15
           timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          exec:
-            command:
-            - mongosh
-            - --eval
-            - "db.adminCommand('ping')"
-          initialDelaySeconds: 20
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 3
+          failureThreshold: 5
         resources:
           requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
             memory: "256Mi"
             cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "250m"
       volumes:
       - name: mongo-storage
         persistentVolumeClaim:
           claimName: mongo-pvc
       - name: mongo-config
-        emptyDir: {}
+        emptyDir: {}      # Creates temporary storage that exists only while the pod is running
 ---
 apiVersion: v1
 kind: Service
@@ -85,3 +85,39 @@ spec:
     port: 27017
     targetPort: 27017
   type: ClusterIP
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: school-api-quota
+  namespace: school-api
+spec:
+  hard:
+    requests.cpu: "200m"
+    requests.memory: "512Mi"
+    limits.cpu: "300m"
+    limits.memory: "1Gi"
+    persistentvolumeclaims: "5"
+    requests.storage: "10Gi"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: school-api-limits
+  namespace: school-api
+spec:
+  limits:
+  - default:
+      cpu: "100m"
+      memory: "128Mi"
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+    type: Container
+  - max:
+      cpu: "150m"
+      memory: "256Mi"
+    min:
+      cpu: "10m"
+      memory: "32Mi"
+    type: Container

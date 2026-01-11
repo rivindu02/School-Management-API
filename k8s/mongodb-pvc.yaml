@@ -11,7 +11,7 @@ spec:
   storageClassName: microk8s-hostpath
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi
 
 
 # Purpose:
