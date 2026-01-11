@@ -60,10 +60,10 @@ spec:
           failureThreshold: 3
         resources:
           requests:
-            memory: "512Mi"
+            memory: "256Mi"   # Reduced
             cpu: "100m"
           limits:
-            memory: "1Gi"
+            memory: "512Mi"
             cpu: "300m"
       volumes:
       - name: mongo-storage
@@ -96,10 +96,10 @@ metadata:
   namespace: school-api
 spec:
   hard:
-    requests.cpu: "600m"
-    requests.memory: "2Gi"
-    limits.cpu: "1500m"
-    limits.memory: "3Gi"
+    requests.cpu: "400m"
+    requests.memory: "1Gi"      # Combined requests must be < 1GB
+    limits.cpu: "1000m"
+    limits.memory: "1.5Gi"    # Combined limits must be < 1.5GB
     persistentvolumeclaims: "5"
     requests.storage: "10Gi"
 ---
@@ -114,14 +114,14 @@ metadata:
 spec:
   limits:
   - default:
-      cpu: "100m"
-      memory: "128Mi"
+      cpu: "200m"
+      memory: "384Mi"
     defaultRequest:
       cpu: "50m"
-      memory: "64Mi"
+      memory: "128Mi"
     max:
       cpu: "600m"
-      memory: "1Gi"
+      memory: "768Mi"        # No single container can grab more than 768MB
     min:
       cpu: "10m"
       memory: "32Mi"
