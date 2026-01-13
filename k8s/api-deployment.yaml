@@ -101,15 +101,15 @@ metadata:
   name: school-api-service
   namespace: school-api
 spec:
-  type: ClusterIP  # Here don't use LoadBalancer , Usually requires a specific "Cloud Provider" integration (like EKS) to function correctly.
+  type: NodePort  # Here don't use LoadBalancer , Usually requires a specific "Cloud Provider" integration (like EKS) to function correctly.
   selector:
     app: school-api
   ports:
   - protocol: TCP
     port: 80
     targetPort: 3000
-    #nodePort: 30080  # between 30000-32767
-    #name: http
+    nodePort: 30080  # between 30000-32767
+    name: http
 
 # How the Traffic Flows from External User to school-api Pod
 # Even though Service type is NodePort, the AWS Load Balancer (ALB or NLB) acts as the "front door."
@@ -119,3 +119,5 @@ spec:
 # EC2 to Service: Kubernetes receives traffic on port 30080 and routes it to the school-api-service.
 # Service to Pod: The Service routes the traffic to port 3000 ( targetPort) on one of school-api Pods.
 
+# After ingress
+# Internet → AWS ALB → EC2 Instance (NodePort) → MicroK8s Ingress → Service → Pod
