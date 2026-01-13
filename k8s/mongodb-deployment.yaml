@@ -7,11 +7,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mongo
+      app: mongo    # <--- MUST MATCH WITH THE TEMPLATE METADATA LABEL BELOW (POD'S LABEL)
   template:
     metadata:
       labels:
-        app: mongo
+        app: mongo  # <--- POD'S LABEL
     spec:
       containers:
       - name: mongo
@@ -25,12 +25,12 @@ spec:
           valueFrom:
             secretKeyRef:
               name: school-api-secret
-              key: MONGO_INITDB_ROOT_USERNAME
+              key: mongo-root-username
         - name: MONGO_INITDB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: school-api-secret
-              key: MONGO_INITDB_ROOT_PASSWORD
+              key: mongo-root-password
         - name: MONGO_INITDB_DATABASE
           value: "school_db"
         volumeMounts:         # specifies the volumes to mount into the container's filesystem.
@@ -82,8 +82,8 @@ spec:
     app: mongo
   ports:
   - protocol: TCP
-    port: 27017
-    targetPort: 27017
+    port: 27017     # <--- service port
+    targetPort: 27017   # <--- SHOULD MATCH CONTAINER PORT IN DEPLOYMENT
   type: ClusterIP
 ---
 # ResourceQuota defines compute resource constraints on a namespace
