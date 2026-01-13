@@ -32,30 +32,30 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: school-api-config
-              key: NODE_ENV
+              key: node-env
         - name: MONGO_URI
           valueFrom:
             configMapKeyRef:
               name: school-api-config
-              key: MONGO_URI
+              key: mongo-uri
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: school-api-secret
-              key: JWT_SECRET
+              key: jwt-secret
         - name: PORT
           value: "3000"
         - name: HOST
           value: "0.0.0.0"
         securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false # Prevents privilege escalation within the container
+          readOnlyRootFilesystem: false # The application needs to write to the filesystem for logs/temp files
           runAsNonRoot: true
           runAsUser: 1001
           capabilities: 
             drop:       
             - ALL       #  The container will only have the minimal permissions required to run
-        startupProbe:
+        startupProbe: # It prevents the livenessProbe from killing the container before it has even finished starting up.
           httpGet:
             path: /health
             port: 3000
@@ -71,7 +71,7 @@ spec:
           periodSeconds: 15
           timeoutSeconds: 5
           failureThreshold: 3
-        readinessProbe:
+        readinessProbe: # app might be "alive" (Liveness passes) but busy loading a massive cache or connecting to a database.
           httpGet:
             path: /health
             port: 3000
@@ -84,25 +84,38 @@ spec:
             memory: "128Mi"
             cpu: "50m"
           limits:
-            memory: "384Mi"  # Slightly increased to avoid OOMKilled if Node.js spikes
-            cpu: "300m"
+            memory: "384Mi"  # Slightly increased to avoid OOMKilled if Node.js spikes (typically indicating that the single-threaded event loop is being blocked by a resource-intensive operation, memory leak, or high traffic volume)
+            cpu: "300m"     # btw all t3 are dual threaded vCPUs
+
+# Explnation how the Traffic Flows from school-api pod to the mongo-service
+# Even though Pod IPs change, the Service IP (ClusterIP) never changes as long as the service exists.
+
+# DNS Lookup: Your Node.js app tries to connect to school-db-service.
+# CoreDNS: The internal Kubernetes DNS (CoreDNS) resolves school-db-service to its internal ClusterIP (e.g., 10.152.183.21).
+# Kube-Proxy: The networking layer (Kube-proxy) sees the traffic hitting that ClusterIP and routes it to one of the healthy MongoDB Pods.
+
 ---
 apiVersion: v1
-kind: Service
+kind: Service   # this service exposes the deployment to external traffic--> External Service
 metadata:
   name: school-api-service
   namespace: school-api
 spec:
-  type: NodePort
+  type: ClusterIP  # Here don't use LoadBalancer , Usually requires a specific "Cloud Provider" integration (like EKS) to function correctly.
   selector:
     app: school-api
   ports:
   - protocol: TCP
     port: 80
     targetPort: 3000
-    nodePort: 30080
-    name: http
+    #nodePort: 30080  # between 30000-32767
+    #name: http
 
+# How the Traffic Flows from External User to school-api Pod
+# Even though Service type is NodePort, the AWS Load Balancer (ALB or NLB) acts as the "front door."
 
-
+# Traffic Entry: A user sends a request to the AWS Load Balancer DNS.
+# LB to EC2: The AWS Load Balancer is configured to forward traffic to your EC2 instance's IP address on port 30080 (nodePort).
+# EC2 to Service: Kubernetes receives traffic on port 30080 and routes it to the school-api-service.
+# Service to Pod: The Service routes the traffic to port 3000 ( targetPort) on one of school-api Pods.
 
