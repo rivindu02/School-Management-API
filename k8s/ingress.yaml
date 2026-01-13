@@ -5,6 +5,7 @@ metadata:
   namespace: school-api
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 spec:
   ingressClassName: public # Default class for MicroK8s
   rules:
