@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: school-api
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: school-api
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: school-api
+  template:
+    metadata:
+      labels:
+        app: school-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: school-api
+        image: {{ .Values.api.image }}
+        imagePullPolicy: {{ .Values.api.imagePullPolicy | default "Always" }}
+        ports:
+        - containerPort: {{ .Values.api.port }}
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: school-api-config
+              key: node-env
+        - name: MONGO_URI
+          valueFrom:
+            configMapKeyRef:
+              name: school-api-config
+              key: mongo-uri
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: school-api-secret
+              key: jwt-secret
+        - name: PORT
+          value: "{{ .Values.api.port }}"
+        - name: HOST
+          value: "0.0.0.0"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop:
+            - ALL
+        {{- if .Values.api.healthChecks.enabled }}
+        startupProbe:
+          httpGet:
+            path: {{ .Values.api.healthChecks.path }}
+            port: {{ .Values.api.port }}
+          initialDelaySeconds: {{ .Values.api.healthChecks.startup.initialDelaySeconds }}
+          periodSeconds: {{ .Values.api.healthChecks.startup.periodSeconds }}
+          timeoutSeconds: {{ .Values.api.healthChecks.startup.timeoutSeconds }}
+          failureThreshold: {{ .Values.api.healthChecks.startup.failureThreshold }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.api.healthChecks.path }}
+            port: {{ .Values.api.port }}
+          initialDelaySeconds: {{ .Values.api.healthChecks.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.api.healthChecks.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.api.healthChecks.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.api.healthChecks.liveness.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.api.healthChecks.path }}
+            port: {{ .Values.api.port }}
+          initialDelaySeconds: {{ .Values.api.healthChecks.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.api.healthChecks.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.api.healthChecks.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.api.healthChecks.readiness.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.api.resources | nindent 10 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: school-api-service
+  namespace: {{ .Values.namespace }}
+spec:
+  type: NodePort
+  selector:
+    app: school-api
+  ports:
+  - port: 80
+    targetPort: {{ .Values.api.port }}
+    nodePort: {{ .Values.api.nodePort }}

@@ -1,0 +1,93 @@
+# Production Environment Configuration
+
+namespace: school-api
+environment: production
+
+api:
+  replicaCount: 3
+  image: rivindu02/school-management-api:latest
+  imagePullPolicy: IfNotPresent  # Use cached images in production
+  port: 3000
+  nodePort: 30443
+  nodeEnv: production
+  
+  healthChecks:
+    enabled: true
+    path: /health
+    startup:
+      initialDelaySeconds: 20
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 20
+    liveness:
+      initialDelaySeconds: 60
+      periodSeconds: 15
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+  
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+mongodb:
+  image: mongo:7.0-jammy
+  storageSize: 10Gi
+  storageClassName: fast-ssd  # Use SSD storage in production
+  
+  healthChecks:
+    enabled: true
+    liveness:
+      initialDelaySeconds: 120
+      periodSeconds: 60
+      timeoutSeconds: 15
+      failureThreshold: 3
+    readiness:
+      initialDelaySeconds: 60
+      periodSeconds: 60
+      timeoutSeconds: 10
+      failureThreshold: 3
+  
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "2Gi"
+
+secrets:
+  # IMPORTANT: Use external secrets management in production!
+  # These should be injected via Sealed Secrets, External Secrets Operator, or Vault
+  jwtSecret: "CHANGE_ME_production-jwt-secret-MUST-BE-STRONG"
+  mongoUsername: "admin"
+  mongoPassword: "CHANGE_ME_production-mongo-password"
+
+ingress:
+  enabled: true
+  className: nginx
+  host: api.school.example.com
+  path: /
+  pathType: Prefix
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+
+resourceQuota:
+  enabled: true
+  requests:
+    cpu: "2000m"
+    memory: "4Gi"
+  limits:
+    cpu: "4000m"
+    memory: "8Gi"

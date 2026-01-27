@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: mongo
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: {{ .Values.mongodb.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.mongodb.storageSize }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: {{ .Values.mongodb.image }}
+        ports:
+        - containerPort: 27017
+          name: mongodb
+          protocol: TCP
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: school-api-secret
+              key: mongo-root-username
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: school-api-secret
+              key: mongo-root-password
+        - name: MONGO_INITDB_DATABASE
+          value: "school_db"
+        volumeMounts:
+        - name: mongo-storage
+          mountPath: /data/db
+        - name: mongo-config
+          mountPath: /data/configdb
+        {{- if .Values.mongodb.healthChecks.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: {{ .Values.mongodb.healthChecks.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.mongodb.healthChecks.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.mongodb.healthChecks.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.mongodb.healthChecks.liveness.failureThreshold }}
+        readinessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: {{ .Values.mongodb.healthChecks.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.mongodb.healthChecks.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.mongodb.healthChecks.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.mongodb.healthChecks.readiness.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.mongodb.resources | nindent 10 }}
+      volumes:
+      - name: mongo-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+      - name: mongo-config
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: mongo
+  ports:
+  - protocol: TCP
+    port: 27017
+    targetPort: 27017
+  type: ClusterIP

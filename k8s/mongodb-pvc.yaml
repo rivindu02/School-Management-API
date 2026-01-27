@@ -8,7 +8,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: microk8s-hostpath
+  storageClassName: microk8s-hostpath # Dynamic provisioning using hostPath on microk8s-->Kubernetes automatically creates a PV when PVC is created
   resources:
     requests:
       storage: 1Gi

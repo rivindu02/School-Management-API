@@ -1,0 +1,88 @@
+# Staging Environment Configuration
+
+namespace: school-api-staging
+environment: staging
+
+api:
+  replicaCount: 2
+  image: rivindu02/school-management-api:staging
+  imagePullPolicy: Always
+  port: 3000
+  nodePort: 30081
+  nodeEnv: staging
+  
+  healthChecks:
+    enabled: true
+    path: /health
+    startup:
+      initialDelaySeconds: 15
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 15
+    liveness:
+      initialDelaySeconds: 45
+      periodSeconds: 15
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+  
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+mongodb:
+  image: mongo:7.0-jammy
+  storageSize: 2Gi
+  storageClassName: standard
+  
+  healthChecks:
+    enabled: true
+    liveness:
+      initialDelaySeconds: 90
+      periodSeconds: 45
+      timeoutSeconds: 15
+      failureThreshold: 3
+    readiness:
+      initialDelaySeconds: 45
+      periodSeconds: 45
+      timeoutSeconds: 10
+      failureThreshold: 3
+  
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+secrets:
+  jwtSecret: "staging-jwt-secret-8fH2jK9mP4qR7sT1vW6xY3zA5bC8dE0fG2hI4jK6lM8n"
+  mongoUsername: "admin"
+  mongoPassword: "staging-mongo-password"
+
+ingress:
+  enabled: true
+  className: public
+  host: school-api-staging.local
+  path: /
+  pathType: Prefix
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+
+resourceQuota:
+  enabled: true
+  requests:
+    cpu: "800m"
+    memory: "2Gi"
+  limits:
+    cpu: "2000m"
+    memory: "4Gi"

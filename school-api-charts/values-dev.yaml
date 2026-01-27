@@ -1,0 +1,82 @@
+# Development Environment Configuration
+
+namespace: school-api-dev
+environment: development
+
+api:
+  replicaCount: 1
+  image: rivindu02/school-management-api:dev
+  imagePullPolicy: Always
+  port: 3000
+  nodePort: 30080
+  nodeEnv: development
+  
+  healthChecks:
+    enabled: true
+    path: /health
+    startup:
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 10
+    liveness:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      initialDelaySeconds: 20
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+  
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+mongodb:
+  image: mongo:7.0-jammy
+  storageSize: 500Mi
+  storageClassName: microk8s-hostpath
+  
+  healthChecks:
+    enabled: true
+    liveness:
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+    readiness:
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+  
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+secrets:
+  jwtSecret: "dev-jwt-secret-8fH2jK9mP4qR7sT1vW6xY3zA5bC8dE0fG2hI4jK6lM8n"
+  mongoUsername: "admin"
+  mongoPassword: "dev-password"
+
+ingress:
+  enabled: true
+  className: public
+  host: school-api-dev.local
+  path: /
+  pathType: Prefix
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+
+resourceQuota:
+  enabled: false  # Disabled for dev

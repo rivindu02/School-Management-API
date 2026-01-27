@@ -1,0 +1,15 @@
+apiVersion: v2
+name: school-api
+description: A comprehensive Helm chart for the School Management API with MongoDB, including health checks, security contexts, and production-ready configurations
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - school-management
+  - api
+  - mongodb
+  - nodejs
+  - express
+maintainers:
+  - name: Rivindu
+home: https://github.com/rivindu02/School-Management-API
