@@ -38,33 +38,24 @@ api:
       cpu: "300m"
       memory: "384Mi"
 
-# MongoDB Deployment
+# Bitnami MongoDB Configuration
 mongodb:
-  image: mongo:7.0-jammy
-  storageSize: 1Gi
-  storageClassName: microk8s-hostpath
+  auth:
+    # This replaces your 'school-api-secret' mongo keys
+    rootPassword: "xY3zA5bC8dE0fG2hI4jK6lM8n9oP1q"
+    username: "admin"
+    password: "xY3zA5bC8dE0fG2hI4jK6lM8n9oP1q"
+    database: "school_db"
   
-  # Health check configuration
-  healthChecks:
-    enabled: true   # can bypass health checks in local/dev environments
-    liveness:
-      initialDelaySeconds: 120
-      periodSeconds: 60
-      timeoutSeconds: 15
-      failureThreshold: 3
-    readiness:
-      initialDelaySeconds: 60
-      periodSeconds: 60
-      timeoutSeconds: 10
-      failureThreshold: 3
+  # This acts like your ConfigMap for MongoDB
+  persistence:
+    enabled: true
+    storageClass: "microk8s-hostpath"
+    size: 1Gi
   
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "256Mi"
-    limits:
-      cpu: "300m"
-      memory: "512Mi"
+  # This ensures the service name matches what your API expects
+  service:
+    nameOverride: "mongo-service"
 
 # Secrets (In production --> use SealedSecrets or Vault)
 secrets:
