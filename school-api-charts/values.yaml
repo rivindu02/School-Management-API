@@ -40,22 +40,31 @@ api:
 
 # Bitnami MongoDB Configuration
 mongodb:
+  enabled: true
   auth:
-    # This replaces your 'school-api-secret' mongo keys
+    enabled: true
+    rootUser: admin
     rootPassword: "xY3zA5bC8dE0fG2hI4jK6lM8n9oP1q"
-    username: "admin"
-    password: "xY3zA5bC8dE0fG2hI4jK6lM8n9oP1q"
-    database: "school_db"
+    databases:
+      - school_db
   
-  # This acts like your ConfigMap for MongoDB
+  architecture: standalone
+  
   persistence:
     enabled: true
     storageClass: "microk8s-hostpath"
     size: 1Gi
   
-  # This ensures the service name matches what your API expects
-  service:
-    nameOverride: "mongo-service"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "300m"
+      memory: "512Mi"
+  
+  # Override service name to match your API expectations
+  fullnameOverride: "mongo-service"
 
 # Secrets (In production --> use SealedSecrets or Vault)
 secrets:
