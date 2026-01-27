@@ -45,8 +45,7 @@ mongodb:
     enabled: true
     rootUser: admin
     rootPassword: "xY3zA5bC8dE0fG2hI4jK6lM8n9oP1q"
-    databases:
-      - school_db
+    # Don't create custom users - API will use root and create DB automatically
   
   architecture: standalone
   
