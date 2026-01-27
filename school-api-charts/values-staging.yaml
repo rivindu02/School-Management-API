@@ -1,7 +1,6 @@
 # Staging Environment Configuration
 
 namespace: school-api-staging
-environment: staging
 
 api:
   replicaCount: 2

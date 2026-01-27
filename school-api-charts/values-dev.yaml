@@ -1,7 +1,10 @@
 # Development Environment Configuration
 
 namespace: school-api-dev
-environment: development
+
+# Development
+# kubectl create namespace school-api-dev
+# kubectl label namespace school-api-dev environment=development
 
 api:
   replicaCount: 1

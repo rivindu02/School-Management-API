@@ -1,7 +1,9 @@
 # Production Environment Configuration
 
 namespace: school-api
-environment: production
+# Production
+# kubectl create namespace school-api
+# kubectl label namespace school-api environment=production
 
 api:
   replicaCount: 3
@@ -65,7 +67,7 @@ mongodb:
       memory: "2Gi"
 
 secrets:
-  # IMPORTANT: Use external secrets management in production!
+  # IMPORTANT: hv to use external secrets management in production!
   # These should be injected via Sealed Secrets, External Secrets Operator, or Vault
   jwtSecret: "CHANGE_ME_production-jwt-secret-MUST-BE-STRONG"
   mongoUsername: "admin"

@@ -1,6 +1,5 @@
 # Global configuration
 namespace: school-api
-environment: production
 
 # API Deployment
 api:
