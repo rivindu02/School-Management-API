@@ -46,7 +46,7 @@ mongodb:
   
   # Health check configuration
   healthChecks:
-    enabled: true
+    enabled: true   # can bypass health checks in local/dev environments
     liveness:
       initialDelaySeconds: 120
       periodSeconds: 60

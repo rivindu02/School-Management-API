@@ -75,7 +75,7 @@ spec:
           failureThreshold: {{ .Values.mongodb.healthChecks.readiness.failureThreshold }}
         {{- end }}
         resources:
-          {{- toYaml .Values.mongodb.resources | nindent 10 }}
+          {{- toYaml .Values.mongodb.resources | nindent 10 }} # The nindent (newline + indent) function adds a newline before the content and then indents each line, ensuring proper YAML structure alignment within the parent template.
       volumes:
       - name: mongo-storage
         persistentVolumeClaim:

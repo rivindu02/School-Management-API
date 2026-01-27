@@ -130,21 +130,44 @@ To remove everything:
 microk8s kubectl delete namespace school-api
 
 # Or delete individual resources
-microk8s kubectl delete -f .
+microk8s kubectl delete -f .    # ⚠️ **Warning**: This will delete all data including the MongoDB persistent volume!
 ```
 
-⚠️ **Warning**: This will delete all data including the MongoDB persistent volume!
 
-## Security Best Practices
+## 🔐 Security Architecture
 
-1. ✅ Non-root user in container
-2. ✅ Resource limits configured
-3. ✅ Health checks enabled
-4. ✅ Secrets for sensitive data
-5. ⚠️ TODO: Enable Network Policies
-6. ⚠️ TODO: Add TLS/SSL with Ingress
-7. ⚠️ TODO: Implement RBAC
-
+```
+┌─────────────────────────────────────────────────┐
+│           Security Boundaries                   │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  Pod Security Context:                          │
+│  ├─ runAsNonRoot: true                          │
+│  ├─ runAsUser: 1001                             │
+│  ├─ fsGroup: 1001                               │
+│  └─ allowPrivilegeEscalation: false             │
+│                                                 │
+│  Container Security:                            │
+│  ├─ readOnlyRootFilesystem: false               │
+│  ├─ capabilities.drop: [ALL]                    │
+│  └─ No privileged mode                          │
+│                                                 │
+│  Network Policy:                                │
+│  ├─ MongoDB: ClusterIP (internal only)          │
+│  ├─ API: NodePort (external access)             │
+│  └─ Ingress: Optional external routing          │
+│                                                 │
+│  Secret Management:                             │
+│  ├─ JWT Secret (from Secret)                    │
+│  ├─ MongoDB credentials (from Secret)           │
+│  └─ Recommend: External Secrets Operator        │
+│                                                 │
+│  Resource Quotas:                               │
+│  ├─ CPU limits prevent resource exhaustion      │
+│  └─ Memory limits prevent OOM attacks           │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
 ## Advanced Configuration
 
 ### Adding Ingress (for domain names and TLS)
@@ -177,6 +200,23 @@ spec:
 
 For production, consider using StatefulSet instead of Deployment for MongoDB to ensure stable network identity and ordered deployment.
 
-## Support
+## Health Checks
 
-For detailed deployment instructions, see [DEPLOYMENT.md](../DEPLOYMENT.md) in the root directory.
+### API Health Checks
+
+- **Startup Probe**: 15s initial delay, checks every 5s (prevents early kills)
+- **Liveness Probe**: 45s initial delay, checks every 15s (restarts unhealthy pods)
+- **Readiness Probe**: 30s initial delay, checks every 10s (controls traffic routing)
+
+### MongoDB Health Checks
+
+- **Liveness Probe**: 120s initial delay, checks every 60s (restarts if unresponsive)
+- **Readiness Probe**: 60s initial delay, checks every 60s (ready for connections)
+
+## Security
+
+- **Non-root containers**: Runs as user 1001
+- **Read-only root filesystem**: Where applicable
+- **No privilege escalation**: Security hardened
+- **Dropped capabilities**: Minimal permissions
+- **Secrets management**: Use external secrets in production (Sealed Secrets, Vault)
