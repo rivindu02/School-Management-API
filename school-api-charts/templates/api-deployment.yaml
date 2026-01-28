@@ -28,6 +28,13 @@ spec:
             sleep 2
           done
           echo "MongoDB is up - starting API"
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "16Mi"
+          limits:
+            cpu: "50m"
+            memory: "32Mi"
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
