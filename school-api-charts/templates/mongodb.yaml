@@ -1,3 +1,4 @@
+{{- if not .Values.mongodb.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -7,10 +8,10 @@ metadata:
     app: mongo
 spec:
   accessModes: ["ReadWriteOnce"]
-  storageClassName: {{ .Values.mongodb.storageClassName | default "" }}
+  storageClassName: ""
   resources:
     requests:
-      storage: {{ .Values.mongodb.storageSize }}
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -29,22 +30,16 @@ spec:
     spec:
       containers:
       - name: mongo
-        image: {{ .Values.mongodb.image }}
+        image: mongo:7.0-jammy
         ports:
         - containerPort: 27017
           name: mongodb
           protocol: TCP
         env:
         - name: MONGO_INITDB_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: school-api-secret
-              key: mongo-root-username
+          value: "admin"
         - name: MONGO_INITDB_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: school-api-secret
-              key: mongo-root-password
+          value: "xY3zA5bC8dE0fG2hI4jK6lM8n9oP1q"
         - name: MONGO_INITDB_DATABASE
           value: "school_db"
         volumeMounts:
@@ -52,40 +47,13 @@ spec:
           mountPath: /data/db
         - name: mongo-config
           mountPath: /data/configdb
-        {{- if .Values.mongodb.healthChecks.enabled }}
-        livenessProbe:
-          exec:
-            command:
-            - bash
-            - -c
-            - |
-              if command -v mongosh &> /dev/null; then
-                mongosh --eval "db.adminCommand('ping')"
-              else
-                mongo --eval "db.adminCommand('ping')"
-              fi
-          initialDelaySeconds: {{ .Values.mongodb.healthChecks.liveness.initialDelaySeconds }}
-          periodSeconds: {{ .Values.mongodb.healthChecks.liveness.periodSeconds }}
-          timeoutSeconds: {{ .Values.mongodb.healthChecks.liveness.timeoutSeconds }}
-          failureThreshold: {{ .Values.mongodb.healthChecks.liveness.failureThreshold }}
-        readinessProbe:
-          exec:
-            command:
-            - bash
-            - -c
-            - |
-              if command -v mongosh &> /dev/null; then
-                mongosh --eval "db.adminCommand('ping')"
-              else
-                mongo --eval "db.adminCommand('ping')"
-              fi
-          initialDelaySeconds: {{ .Values.mongodb.healthChecks.readiness.initialDelaySeconds }}
-          periodSeconds: {{ .Values.mongodb.healthChecks.readiness.periodSeconds }}
-          timeoutSeconds: {{ .Values.mongodb.healthChecks.readiness.timeoutSeconds }}
-          failureThreshold: {{ .Values.mongodb.healthChecks.readiness.failureThreshold }}
-        {{- end }}
         resources:
-          {{- toYaml .Values.mongodb.resources | nindent 10 }}
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "300m"
+            memory: "512Mi"
       volumes:
       - name: mongo-storage
         persistentVolumeClaim:
@@ -106,3 +74,4 @@ spec:
     port: 27017
     targetPort: 27017
   type: ClusterIP
+{{- end }}
