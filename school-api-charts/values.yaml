@@ -38,20 +38,23 @@ api:
       cpu: "300m"
       memory: "384Mi"
 
-# Bitnami MongoDB Configuration
+# MongoDB Configuration (Bitnami from Artifact Hub)
 mongodb:
-  enabled: true
+  enabled: false  # Set to false to use manual mongo:7.0-jammy deployment
+  
+  # Don't override image - let Bitnami chart use its default
+  # The chart will use: docker.io/bitnami/mongodb:8.0.4-debian-12-r3
+  
   auth:
     enabled: true
     rootUser: admin
     rootPassword: "xY3zA5bC8dE0fG2hI4jK6lM8n9oP1q"
-    # Don't create custom users - API will use root and create DB automatically
   
   architecture: standalone
   
   persistence:
     enabled: true
-    storageClass: "microk8s-hostpath"
+    storageClass: ""
     size: 1Gi
   
   resources:
@@ -62,7 +65,17 @@ mongodb:
       cpu: "300m"
       memory: "512Mi"
   
-  # Override service name to match your API expectations
+  # Disable init containers that cause image pull issues
+  volumePermissions:
+    enabled: false
+  
+  # Use minimal security contexts for testing
+  containerSecurityContext:
+    enabled: false
+  podSecurityContext:
+    enabled: false
+  
+  # Override service name
   fullnameOverride: "mongo-service"
 
 # Secrets (In production --> use SealedSecrets or Vault)

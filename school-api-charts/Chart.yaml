@@ -16,5 +16,6 @@ home: https://github.com/rivindu02/School-Management-API
 
 dependencies:
   - name: mongodb
-    version: 16.4.3 # Use the latest stable version from Artifact Hub
+    version: 16.4.3
     repository: https://charts.bitnami.com/bitnami
+    condition: mongodb.enabled
