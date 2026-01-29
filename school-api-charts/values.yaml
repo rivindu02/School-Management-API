@@ -40,43 +40,66 @@ api:
 
 # MongoDB Configuration (Bitnami from Artifact Hub)
 mongodb:
-  enabled: false  # Set to false to use manual mongo:7.0-jammy deployment
+  enabled: true  # Toggle: true=Bitnami chart, false=manual deployment
   
-  # Don't override image - let Bitnami chart use its default
-  # The chart will use: docker.io/bitnami/mongodb:8.0.4-debian-12-r3
+  # Image configuration - using latest stable
+  image:
+    registry: registry-1.docker.io
+    repository: bitnami/mongodb
+    tag: 8.0.4-debian-12-r3
+    pullPolicy: IfNotPresent
   
+  # Authentication
   auth:
     enabled: true
     rootUser: admin
     rootPassword: "xY3zA5bC8dE0fG2hI4jK6lM8n9oP1q"
   
+  # Architecture
   architecture: standalone
+  useStatefulSet: false  # Use Deployment instead for standalone
   
+  # Persistence
   persistence:
     enabled: true
-    storageClass: ""
+    storageClass: "microk8s-hostpath"  # Explicit storage class for MicroK8s
     size: 1Gi
+    accessModes:
+      - ReadWriteOnce
   
+  # Resource limits (required by ResourceQuota)
   resources:
     requests:
       cpu: "100m"
       memory: "256Mi"
     limits:
-      cpu: "300m"
+      cpu: "500m"
       memory: "512Mi"
   
-  # Disable init containers that cause image pull issues
+  # Disable problematic init containers
   volumePermissions:
     enabled: false
   
-  # Use minimal security contexts for testing
+  # Security contexts - disabled for compatibility
   containerSecurityContext:
     enabled: false
   podSecurityContext:
     enabled: false
   
-  # Override service name
+  # Service configuration
   fullnameOverride: "mongo-service"
+  
+  # Disable arbiter for standalone
+  arbiter:
+    enabled: false
+  
+  # Network policy
+  networkPolicy:
+    enabled: false
+  
+  # Metrics disabled
+  metrics:
+    enabled: false
 
 # Secrets (In production --> use SealedSecrets or Vault)
 secrets:
