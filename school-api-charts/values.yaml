@@ -47,8 +47,12 @@ api:
 mongodb:
   enabled: true  # Toggle: true=Bitnami chart, false=manual deployment
   
-  # Use default Bitnami image (removes validation error)
-  # The chart will use its default stable MongoDB image
+  # Use bitnamilegacy registry (the new location for this image)
+  image:
+    registry: registry-1.docker.io
+    repository: bitnamilegacy/mongodb
+    tag: 8.0.4-debian-12-r3
+    pullPolicy: IfNotPresent
   
   # Authentication
   auth:
