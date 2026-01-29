@@ -5,7 +5,7 @@ metadata:
   name: school-api-ingress
   namespace: {{ .Values.namespace }}
   annotations:
-    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }} # uses 4 spaces for indentation
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
